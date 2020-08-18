@@ -1,7 +1,7 @@
 # 超盘
 将文件上传并导出下载直链，文件分享的神器</br>
 文件200MB以内，可以直接上传，不限制上传次数，不限制文件类型，不限制下载速度
-文件大于200MB，需要在https://pan-yz.chaoxing.com/注册账号，然后在这个页面按F12打开开发者工具，点击Application，点击Cookies下面的网址，在右侧找到UID和uf两项并把值填入到config.js文件中。
+文件大于200MB，需要在https://pan-yz.chaoxing.com/  注册账号，然后在这个页面按F12打开开发者工具，点击Application，点击Cookies下面的网址，在右侧找到UID和uf两项并把值填入到config.js文件中。
 </br>
 
 ## 使用方法
