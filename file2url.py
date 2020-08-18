@@ -45,5 +45,4 @@ try:
             print('清理完成')
 
 except Exception as e: 
-    print(e.with_traceback())
-    #print(f'出现错误，原因为:{str(e)}')
+    print(f'出现错误，原因为:{str(e)}')
