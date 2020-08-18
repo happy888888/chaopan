@@ -77,6 +77,7 @@ class Chaopan(object):
 
         ip = '140.210.72.122'
         ftp = FTP()
+        ftp.encoding = 'utf-8'
         ftp.connect(ip, 21)
         ftp.login("usertemp", "0GYF0hBAbsXVBZCUPaSOVS")
         ftp.set_pasv(True)
@@ -122,7 +123,7 @@ class Chaopan(object):
 
             if self.__ftp_upload_file(file, timemil, callback):
                 self.__sync_upload(timemil, fldid)
-
+                time.sleep(2)
             return self.__crcstatus(crc)
 
         else:
