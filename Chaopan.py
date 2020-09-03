@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import requests,json
+import requests, json
 from ftplib import FTP
 import os,time
 
@@ -16,14 +16,15 @@ class Chaopan(object):
         self.__id = cookies["UID"]
         self.__session = session
 
+    def __get_info(self):
+        url = f'https://pan-yz.chaoxing.com/api/info?puid={self.__id}&_token={self.__token}'
+        return self.__session.get(url).json()["data"]
+
     def get_disk_capacity(self):
         """获取总空间和已用空间大小"""
         url = f'https://pan-yz.chaoxing.com/api/getUserDiskCapacity?puid={self.__id}&_token={self.__token}'
         response = self.__session.get(url)
         retobj = json.loads(response.text)
-        '''
-        {"code":2,"data":{"diskTotalCapacity":107374182400,"diskUsedCapacity":4762292405},"newCode":200001,"result":true}
-        '''
         return retobj
 
     def list_dir(self, fldid='', orderby='d', order='desc', page=1, size=100, addrec=False, showCollect=1):
@@ -31,9 +32,6 @@ class Chaopan(object):
         url = f'https://pan-yz.chaoxing.com/api/getMyDirAndFiles?puid={self.__id}&fldid={fldid}&orderby={orderby}&order={order}&page={page}&size={size}&_token={self.__token}&addrec={addrec}&showCollect={showCollect}'
         response = self.__session.get(url)
         retobj = json.loads(response.text)
-        '''
-        {"result":true,"shareCount":0,"data":[{"preview":"http://pan-yz.chaoxing.com/preview/showpreview_502434490360643584.html","filetype":"","extinfo":"","thumbnail":"http://pan-yz.chaoxing.com/thumbnail/origin/d9306333d36579b7ba8047234a4ad7b9?type=video","creator":137386368,"modifyDate":1597719316000,"resTypeValue":1,"sort":20,"suffix":"mp4","resid":502434490360643584,"topsort":0,"restype":"RES_TYPE_YUNPAN_FILE","duration":2546,"pantype":"USER_PAN","puid":137386368,"size":128644721,"uploadDate":1597719316000,"filepath":"","crc":"a3903ee56a4f131c7d23ce796f92ea4d","isfile":true,"name":"【 同人音声 】想用治愈的震动声让他入睡.mp4","residstr":"502434490360643584","objectId":"d9306333d36579b7ba8047234a4ad7b9"},{"preview":"","filetype":"","extinfo":"","thumbnail":"","creator":137386368,"modifyDate":1597647440000,"resTypeValue":2,"sort":9,"suffix":"","resid":502133017096220672,"topsort":0,"restype":"RES_TYPE_YUNPAN_FOLDER","duration":0,"pantype":"USER_PAN","puid":137386368,"size":0,"uploadDate":1597647440000,"filepath":"","isfile":false,"name":"电影","residstr":"502133017096220672"}],"curDir":451731192771985408}
-        '''
         return retobj
 
     def __create_file_new(self, file: "本地文件", fldid=""):
@@ -74,20 +72,21 @@ class Chaopan(object):
                 callback(jindu[1] / jindu[0])
             else:
                 callback(1)
-
-        ip = '140.210.72.122'
+        info = self.__get_info()
+        upath = info["froot"]
+        host = info["host"]
         ftp = FTP()
         ftp.encoding = 'utf-8'
-        ftp.connect(ip, 21)
+        ftp.connect(host, 21)
         ftp.login("usertemp", "0GYF0hBAbsXVBZCUPaSOVS")
         ftp.set_pasv(True)
-        ftp.mkd(f'/384/2432/{self.__id}/{timemil}')
+        ftp.mkd(f'/{upath}/{timemil}')
         path,name = os.path.split(file.name)
         file.seek(0, 0)
         if callback:
-            res = ftp.storbinary(f'STOR /384/2432/{self.__id}/{timemil}/{name}', file, blocksize=8192, callback=__callback)
+            res = ftp.storbinary(f'STOR /{upath}/{timemil}/{name}', file, blocksize=8192, callback=__callback)
         else:
-            res = ftp.storbinary(f'STOR /384/2432/{self.__id}/{timemil}/{name}', file)
+            res = ftp.storbinary(f'STOR /{upath}/{timemil}/{name}', file)
         ret =  res.find('226') != -1
         ftp.quit()
         return ret
@@ -123,7 +122,6 @@ class Chaopan(object):
 
             if self.__ftp_upload_file(file, timemil, callback):
                 self.__sync_upload(timemil, fldid)
-                time.sleep(2)
             return self.__crcstatus(crc)
 
         else:
